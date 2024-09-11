@@ -1,0 +1,76 @@
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: url('https://yt3.googleusercontent.com/9zHpueG5dJOy8j5mhRUJdPd8v3KMwoxbPr4pquUrfrIcaHnaMbwZMD9JmS_03bbxJRXM8E4aqA=w2560-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj') no-repeat center center;
+    background-size: cover;
+    min-height: 100vh;
+  }
+  
+  .board {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .board-row {
+    display: flex;
+  }
+  
+  .square {
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    border: 1px solid #999;
+    font-size: 36px;
+    font-weight: bold;
+    line-height: 80px;
+    margin: -1px;
+    padding: 0;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  
+  .square:focus {
+    outline: none;
+  }
+  
+  .square:hover {
+    background: #f0f0f0;
+  }
+  
+  .status {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  @keyframes win-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  .winner {
+    animation: win-animation 0.5s ease-in-out;
+  }

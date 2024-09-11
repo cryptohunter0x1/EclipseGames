@@ -1,0 +1,71 @@
+{
+    "version": "0.1.0",
+    "name": "chomping_glass",
+    "instructions": [
+      {
+        "name": "initializeGame",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "playTurn",
+        "accounts": [
+          {
+            "name": "game",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "player",
+            "isMut": true,
+            "isSigner": true
+          }
+        ],
+        "args": [
+          {
+            "name": "glassIndex",
+            "type": "u8"
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "Game",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "glasses",
+              "type": {
+                "array": [
+                  "u8",
+                  7
+                ]
+              }
+            },
+            {
+              "name": "result",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    ]
+  }

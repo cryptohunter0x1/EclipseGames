@@ -1,0 +1,67 @@
+.tic-tac-toe-game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .glasses-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  
+  .glass {
+    width: 60px;
+    height: 100px;
+    margin: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 2px solid #ccc;
+    border-radius: 10px 10px 5px 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s ease;
+  }
+  
+  .glass:hover {
+    transform: translateY(-5px);
+  }
+  
+  .glass.selected {
+    border-color: #007bff;
+  }
+  
+  .glass:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .error {
+    color: red;
+    margin-bottom: 10px;
+  }
+  
+  .result {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }

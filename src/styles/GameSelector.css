@@ -1,0 +1,67 @@
+.game-selector-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .game-selection {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .game-selection h1 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .blockchain-selector {
+    margin-bottom: 20px;
+  }
+  
+  .blockchain-selector button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .blockchain-selector button.selected {
+    background-color: #2980b9;
+  }
+  
+  .blockchain-selector button:hover {
+    background-color: #2980b9;
+  }
+  
+  .game-buttons button {
+    margin: 10px;
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .game-buttons button:hover {
+    background-color: #27ae60;
+  }
+  
+  .game-buttons button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+  }
