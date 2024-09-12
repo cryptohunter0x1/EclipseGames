@@ -3,7 +3,7 @@ import { PublicKey, Connection } from '@solana/web3.js';
 import { Program, AnchorProvider, web3, Idl } from '@project-serum/anchor';
 import idl from './idl.json'; // Assurez-vous que ce fichier existe
 
-const programID = new PublicKey('Votre_ID_de_Programme');
+const programID = new PublicKey('2b9zH5CkDZJaydK9EfCfWvixkBqaF69ux2pNbr667rLE');
 
 interface TicTacToeProps {
   onGameEnd: () => void;
