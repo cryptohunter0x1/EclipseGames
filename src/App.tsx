@@ -14,11 +14,13 @@ function App() {
   const [selectedGame, setSelectedGame] = useState<'tictactoe' | 'tetris' | null>(null);
   const [wallet, setWallet] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const checkSalmonWallet = async () => {
     console.log("Vérification de Salmon Wallet...");
     setError(null);
-    
+    setIsLoading(true);
+
     if (typeof window.salmon !== 'undefined') {
       console.log("Salmon Wallet détecté dans la fenêtre");
       try {
@@ -36,9 +38,11 @@ function App() {
       console.log("Salmon Wallet non détecté");
       setError("Salmon Wallet n'est pas détecté. Veuillez l'installer et l'activer.");
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
+    console.log("App component mounted");
     checkSalmonWallet();
   }, []);
 
@@ -52,6 +56,8 @@ function App() {
         <div>
           <p className="error-message">{error}</p>
           <button onClick={checkSalmonWallet}>Réessayer la connexion</button>
+          <p>Vous pouvez continuer sans portefeuille, mais certaines fonctionnalités seront limitées.</p>
+          <GameSelector onSelectGame={setSelectedGame} wallet={null} />
         </div>
       );
     }
@@ -69,6 +75,10 @@ function App() {
         return <GameSelector onSelectGame={setSelectedGame} wallet={wallet} />;
     }
   };
+
+  if (isLoading) {
+    return <div>Chargement de l'application...</div>;
+  }
 
   return (
     <div className="App">
