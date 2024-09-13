@@ -8,6 +8,7 @@ const FEE_RECEIVER = new PublicKey('3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe
 interface GameProps {
   onGameEnd: () => void;
   wallet: any; // Instance de Salmon Wallet
+  walletAddress: string;
 }
 
 const BOARD_WIDTH = 10;
@@ -270,3 +271,4 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet }) => {
 };
 
 export default Tetris;
+
