@@ -1,20 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-import './Tetris.css';  // Au lieu de import styles from './Tetris.module.css';
+// Tetris.tsx
+import React, { useState, useCallback } from 'react';
+import { useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'; 
+import { Program, AnchorProvider } from '@project-serum/anchor';
+import idl from './tetris.json'; // Assurez-vous d'avoir ce fichier
 
-const FEE_AMOUNT = ethers.parseEther("0.001"); // 0.001 ETH
-const FEE_RECEIVER = "3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe";
-
-interface GameProps {
-  onGameEnd: () => void;
-  wallet: any; // Vous pouvez spécifier un type plus précis si nécessaire
-  walletAddress: string;
-}
+const FEE_AMOUNT = LAMPORTS_PER_SOL * 0.001;
+const FEE_RECEIVER = new PublicKey("3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe");
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
-const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet, walletAddress }) => {
+// Déclare les props pour Tetris
+export interface TetrisProps {
+  onGameEnd: () => void;
+}
+
+const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
+  const { publicKey, sendTransaction, connected } = useWallet();
+  const anchorWallet = useAnchorWallet(); // Récupérer le portefeuille connecté
+  
+  // Déclaration des états
   const [board, setBoard] = useState<number[][]>(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
   const [currentPiece, setCurrentPiece] = useState<number[][]>([[1, 1], [1, 1]]);
   const [currentPosition, setCurrentPosition] = useState({ x: 4, y: 0 });
@@ -24,147 +30,53 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet, walletAddress }) => {
   const [error, setError] = useState<string | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
 
-  const provider = new ethers.JsonRpcProvider("https://testnet.dev2.eclipsenetwork.xyz");
+  // Fonction pour démarrer le jeu et payer les frais via Anchor
+  const startGame = useCallback(async () => {
+    if (!anchorWallet || !publicKey) {
+      setError("Wallet not connected");
+      return;
+    }
 
-  const FEE_AMOUNT = ethers.parseEther("0.001"); // 0.001 ETH
-  const FEE_RECEIVER = "3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe";
-
-  const startGame = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
-      // Simulation du paiement
-      console.log("Simulation du paiement de", ethers.formatEther(FEE_AMOUNT), "ETH");
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Attente simulée de 2 secondes
+      const connection = new Connection("https://staging-rpc.dev2.eclipsenetwork.xyz", 'confirmed');
       
-      console.log("Paiement simulé réussi");
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: FEE_RECEIVER,
+          lamports: FEE_AMOUNT,
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, 'confirmed');
+      
+      console.log("Game started successfully");
       setGameStarted(true);
-      setBoard(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
-      setCurrentPiece([[1, 1], [1, 1]]);
-      setCurrentPosition({ x: 4, y: 0 });
-      setScore(0);
-      setGameOver(false);
+      resetGame();
     } catch (err: any) {
-      console.error("Erreur lors de la simulation du paiement:", err);
+      console.error("Error starting game:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
+  }, [anchorWallet, publicKey, sendTransaction]);
+
+  const resetGame = () => {
+    setBoard(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
+    setCurrentPiece([[1, 1], [1, 1]]);
+    setCurrentPosition({ x: 4, y: 0 });
+    setScore(0);
+    setGameOver(false);
   };
-
-  const movePiece = useCallback((dx: number, dy: number) => {
-    if (gameOver) return;
-    const newX = currentPosition.x + dx;
-    const newY = currentPosition.y + dy;
-    if (isValidMove(newX, newY, currentPiece)) {
-      setCurrentPosition({ x: newX, y: newY });
-    } else if (dy > 0) {
-      const newBoard = board.map(row => [...row]);
-      currentPiece.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) {
-            newBoard[currentPosition.y + y][currentPosition.x + x] = value;
-          }
-        });
-      });
-      setBoard(newBoard);
-      clearLines(newBoard);
-      spawnNewPiece();
-    }
-  }, [currentPosition, currentPiece, board, gameOver]);
-
-  const isValidMove = (x: number, y: number, piece: number[][]) => {
-    for (let row = 0; row < piece.length; row++) {
-      for (let col = 0; col < piece[row].length; col++) {
-        if (piece[row][col]) {
-          const newX = x + col;
-          const newY = y + row;
-          if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT || (newY >= 0 && board[newY][newX])) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  };
-
-  const clearLines = (newBoard: number[][]) => {
-    let linesCleared = 0;
-    for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
-      if (newBoard[y].every(cell => cell !== 0)) {
-        newBoard.splice(y, 1);
-        newBoard.unshift(Array(BOARD_WIDTH).fill(0));
-        linesCleared++;
-        y++;
-      }
-    }
-    if (linesCleared > 0) {
-      setScore(prevScore => prevScore + linesCleared * 100);
-    }
-  };
-
-  const spawnNewPiece = () => {
-    const pieces = [
-      [[1, 1], [1, 1]],
-      [[1, 1, 1, 1]],
-      [[1, 1, 1], [0, 1, 0]],
-      [[1, 1, 0], [0, 1, 1]],
-      [[0, 1, 1], [1, 1, 0]],
-      [[1, 1, 1], [1, 0, 0]],
-      [[1, 1, 1], [0, 0, 1]]
-    ];
-    const newPiece = pieces[Math.floor(Math.random() * pieces.length)];
-    setCurrentPiece(newPiece);
-    setCurrentPosition({ x: Math.floor((BOARD_WIDTH - newPiece[0].length) / 2), y: 0 });
-
-    if (!isValidMove(Math.floor((BOARD_WIDTH - newPiece[0].length) / 2), 0, newPiece)) {
-      setGameOver(true);
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (gameOver) return;
-      switch (event.key) {
-        case 'ArrowLeft':
-          movePiece(-1, 0);
-          break;
-        case 'ArrowRight':
-          movePiece(1, 0);
-          break;
-        case 'ArrowDown':
-          movePiece(0, 1);
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [movePiece, gameOver]);
-
-  useEffect(() => {
-    if (gameOver) return;
-    const gameLoop = setInterval(() => {
-      movePiece(0, 1);
-    }, 1000);
-    return () => clearInterval(gameLoop);
-  }, [movePiece, gameOver]);
 
   const renderBoard = () => {
-    const renderedBoard = board.map((row) => [...row]);
-    currentPiece.forEach((row, pieceY) => {
-      row.forEach((cell, pieceX) => {
-        if (cell && currentPosition.y + pieceY >= 0) {
-          renderedBoard[currentPosition.y + pieceY][currentPosition.x + pieceX] = cell;
-        }
-      });
-    });
-
     return (
       <div className="tetris-board">
-        {renderedBoard.map((row, y) => (
+        {board.map((row, y) => (
           <div key={y} className="tetris-row">
             {row.map((cell, x) => (
               <div key={x} className={`tetris-cell ${cell ? 'filled' : ''}`}></div>
@@ -175,16 +87,24 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet, walletAddress }) => {
     );
   };
 
+  if (!connected) {
+    return (
+      <div>
+        <h2>Tetris</h2>
+        <p>Please connect your wallet to play Tetris</p>
+      </div>
+    );
+  }
+
   if (!gameStarted) {
     return (
       <div>
         <h2>Tetris</h2>
-        <p>Adresse du wallet : {walletAddress}</p>
-        {error && <p style={{color: 'red'}}>Erreur : {error}</p>}
+        <p>Wallet address: {publicKey?.toBase58()}</p>
+        {error && <p style={{color: 'red'}}>Error: {error}</p>}
         <button onClick={startGame} disabled={isLoading}>
-          {isLoading ? 'Paiement en cours...' : `Démarrer une nouvelle partie (${ethers.formatEther(FEE_AMOUNT)} ETH)`}
+          {isLoading ? 'Processing payment...' : `Start new game (${FEE_AMOUNT / LAMPORTS_PER_SOL} SOL)`}
         </button>
-        <button onClick={onGameEnd}>Retour à la sélection des jeux</button>
       </div>
     );
   }
@@ -196,17 +116,19 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet, walletAddress }) => {
         <p>Score: {score}</p>
         {gameOver && <p>Game Over!</p>}
       </div>
-      <p>Adresse du wallet : {walletAddress}</p>
-      {renderBoard()}
-      {gameOver && (
-        <button onClick={startGame} disabled={isLoading}>
-          {isLoading ? 'Paiement en cours...' : `Démarrer une nouvelle partie (${ethers.formatEther(FEE_AMOUNT)} ETH)`}
-        </button>
+      <p>Wallet address: {publicKey?.toBase58()}</p>
+      {gameStarted ? (
+        <div className="tetris-game">
+          {/* Contenu du jeu Tetris */}
+          {renderBoard()}
+        </div>
+      ) : (
+        <button onClick={startGame}>Start Game</button>
       )}
-      <button onClick={onGameEnd}>Retour à la sélection des jeux</button>
+      <button onClick={onGameEnd}>Back to game selection</button>
     </div>
   );
 };
 
-const TetrisGame = Tetris; // Si vous voulez garder le nom TetrisGame
 export default Tetris;
+

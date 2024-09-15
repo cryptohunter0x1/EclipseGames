@@ -3,10 +3,12 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@project-serum/anchor": "^0.26.0",
         "@solana/wallet-adapter-base": "^0.9.x",
         "@solana/wallet-adapter-react": "^0.15.35",
         "@solana/wallet-adapter-react-ui": "^0.9.35",
         "@solana/wallet-adapter-salmon": "^0.1.x",
+        "@solana/wallet-adapter-wallets": "^0.19.32",
         "@solana/web3.js": "^1.95.3",
         "ethers": "^6.13.2",
         "react": "^17.x.x || ^18.x.x",

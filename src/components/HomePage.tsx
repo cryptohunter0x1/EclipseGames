@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import styles from './HomePage.module.css';
-import Tetris from '../components/Tetris';
-import TicTacToe from '../components/TicTacToe';
-import logo from '../images/logo.png';
+import Tetris from './Tetris';
+import TicTacToe from './TicTacToe';
 import tetrisIcon from '../images/tetris-icon.png';
 import tictactoeIcon from '../images/tictactoe-icon.png';
-import backgroundImage from '../images/background.jpg';
 import CustomWalletButton from './CustomWalletButton';
 
 const games = [
@@ -14,19 +12,8 @@ const games = [
   { id: 'Tic Tac Toe', name: 'Tic Tac Toe', icon: tictactoeIcon },
 ];
 
-// Définition du GameComponent
-const GameComponent: React.FC<{ gameName: string }> = ({ gameName }) => {
-  return (
-    <div className={styles.gameContainer}>
-      <h3>{gameName}</h3>
-      <p>Ici se trouvera le jeu {gameName}.</p>
-      <p>Cliquez sur "Retour à la sélection" pour choisir un autre jeu.</p>
-    </div>
-  );
-};
-
 const HomePage: React.FC = () => {
-  const { connected, publicKey, wallet } = useWallet();
+  const { connected, publicKey } = useWallet();
   const { connection } = useConnection();
   const [isConnected, setIsConnected] = useState(false);
   const [currentGame, setCurrentGame] = useState<string | null>(null);
@@ -45,31 +32,22 @@ const HomePage: React.FC = () => {
   };
 
   const renderGame = () => {
-    console.log("renderGame appelé, jeu actuel:", currentGame);
     if (!publicKey) {
-      console.log("publicKey non disponible");
       return null;
     }
     
     const walletAddress = publicKey.toBase58();
-    console.log("walletAddress:", walletAddress);
     
     switch (currentGame) {
       case 'Tetris':
-        console.log("Tentative de rendu de Tetris");
         return (
           <div style={{ border: '2px solid blue', padding: '10px' }}>
-            <Tetris 
-              onGameEnd={handleGameEnd} 
-              wallet={wallet} 
-              walletAddress={walletAddress}
-            />
+            <Tetris onGameEnd={handleGameEnd} />
           </div>
         );
       case 'Tic Tac Toe':
-        console.log("Rendering Tic Tac Toe");
         return <TicTacToe 
-          onGameEnd={handleGameEnd} 
+          onGameEnd={handleGameEnd}
           walletAddress={walletAddress}
           provider={connection}
         />;

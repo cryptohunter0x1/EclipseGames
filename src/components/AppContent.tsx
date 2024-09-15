@@ -45,16 +45,9 @@ function AppContent() {
             <GameSelector onSelectGame={setCurrentGame} />
           )}
           {currentGame === 'tetris' && wallet ? (
-            <Tetris
-              onGameEnd={handleGameEnd}
-              wallet={wallet}
-              walletAddress={publicKey ? publicKey.toString() : ''}
-            />
+            <Tetris onGameEnd={handleGameEnd} />
           ) : currentGame === 'tetris' ? (
-            <div>
-              <p>Veuillez connecter votre Salmon Wallet pour jouer à Tetris.</p>
-              <WalletMultiButton />
-            </div>
+            <p>Please connect your wallet to play Tetris</p>
           ) : null}
           {currentGame === 'tictactoe' && provider && (
             <TicTacToe

@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 import './TicTacToe.css';
 import { Connection } from '@solana/web3.js';
 import styles from './TicTacToe.module.css';  // Ajoutez cette ligne
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface TicTacToeProps {
   onGameEnd: () => void;
@@ -11,6 +13,10 @@ interface TicTacToeProps {
 }
 
 const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, walletAddress, provider }) => {
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [board, setBoard] = useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -19,23 +25,38 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, walletAddress, provide
   const [gameMessage, setGameMessage] = useState('');
 
   const handlePayAndStart = async () => {
+    if (!publicKey) {
+      setError("Portefeuille non connecté");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     try {
-      console.log("Simulation du paiement de 0.001 ETH");
-      
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey("ADRESSE_DU_TRESOR_DU_JEU"), // Remplacez par l'adresse réelle du trésor du jeu
+          lamports: LAMPORTS_PER_SOL * 0.001 // 0.001 SOL
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      console.log("Transaction confirmée:", signature);
+      setGameStarted(true);
       setBoard(Array(9).fill(null));
       setXIsNext(true);
       setIsAITurn(false);
-      setGameStarted(true);
       setGameOver(false);
       setGameMessage('');
-      alert("Paiement simulé avec succès. La partie va commencer.");
-    } catch (error) {
-      console.error("Erreur lors de la simulation du paiement:", error);
-      if (error instanceof Error) {
-        alert(`Erreur lors de la simulation du paiement: ${error.message}`);
-      } else {
-        alert("Une erreur inconnue s'est produite lors de la simulation du paiement");
-      }
+    } catch (err) {
+      console.error("Erreur lors de la transaction:", err);
+      setError("La transaction a échoué. Veuillez réessayer.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,7 +137,9 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, walletAddress, provide
   return (
     <div className="tic-tac-toe">
       {!gameStarted ? (
-        <button onClick={handlePayAndStart}>Simuler le paiement de 0.001 ETH et commencer</button>
+        <button onClick={handlePayAndStart} disabled={isLoading || !publicKey}>
+          {isLoading ? "Transaction en cours..." : "Payer 0.001 SOL et commencer"}
+        </button>
       ) : (
         <>
           <div className="status">{status}</div>
@@ -132,6 +155,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, walletAddress, provide
           )}
         </>
       )}
+      {error && <p style={{color: 'red'}}>{error}</p>}
       <button onClick={onGameEnd}>Retour au menu</button>
     </div>
   );
