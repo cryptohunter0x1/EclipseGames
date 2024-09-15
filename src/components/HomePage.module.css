@@ -1,0 +1,169 @@
+.homePage {
+  background-image: url('../images/logo.png'); /* ou .jpg selon le format */
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.walletConnection {
+  /* Styles pour le conteneur du bouton de wallet */
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Aligne le contenu principal à droite */
+  flex-grow: 1;
+}
+
+.title {
+  font-size: 2.5em;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  align-self: center; /* Centre le titre */
+  margin-bottom: 30px;
+}
+
+.gameSelection {
+  align-self: flex-end;
+  margin-top: 20px;
+}
+
+.gameButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gameButton {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.gameButton:hover {
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.gameIcon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.disconnectButton, .currentGame button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.gameSelection {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.gameButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.gameButtons button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.currentGame {
+  margin-top: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gameContainer {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+  color: #333;
+  width: 80%;
+  max-width: 500px;
+}
+
+.gameContainer h3 {
+  margin-bottom: 10px;
+}
+
+.gameContainer p {
+  margin-bottom: 5px;
+}
+
+.tetrisContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid red;
+}
+
+.gameIcon {
+  width: 80px;  /* Ajustez cette valeur selon vos besoins */
+  height: 80px; /* Ajustez cette valeur selon vos besoins */
+  margin-right: 8px; /* Espace entre l'icône et le texte */
+  vertical-align: middle; /* Aligne l'icône avec le texte */
+}
+
+.gameButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  margin: 5px;
+  font-size: 16px;
+  /* Ajoutez d'autres styles pour le bouton si nécessaire */
+}
+
+/* Ajoutez un overlay pour améliorer la lisibilité si nécessaire */
+.content {
+  background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
+  padding: 20px;
+  border-radius: 10px;
+  color: white; /* Texte en blanc pour contraster avec le fond sombre */
+}

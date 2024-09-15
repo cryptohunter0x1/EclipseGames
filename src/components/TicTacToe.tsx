@@ -1,146 +1,194 @@
 import React, { useState, useEffect } from 'react';
-import { PublicKey, Connection } from '@solana/web3.js';
-import { Program, AnchorProvider, web3, Idl } from '@project-serum/anchor';
-
-// Remplacez ceci par votre véritable IDL plus tard
-const IDL: Idl = {
-  version: "0.1.0",
-  name: "tic_tac_toe",
-  instructions: []
-};
-
-const programID = new PublicKey('2b9zH5CkDZJaydK9EfCfWvixkBqaF69ux2pNbr667rLE');
+import { ethers } from 'ethers';
+import './TicTacToe.css';
+import { Connection } from '@solana/web3.js';
+import styles from './TicTacToe.module.css';  // Ajoutez cette ligne
 
 interface TicTacToeProps {
   onGameEnd: () => void;
-  wallet: any; // Instance de Salmon Wallet
   walletAddress: string;
+  provider: any; // Vous pouvez spécifier un type plus précis si nécessaire
 }
 
-interface GameState {
-  board: number[][];
-  turn: number;
-  winner: number | null;
-}
+const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, walletAddress, provider }) => {
+  const [board, setBoard] = useState(Array(9).fill(null));
+  const [xIsNext, setXIsNext] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [isAITurn, setIsAITurn] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [gameMessage, setGameMessage] = useState('');
 
-const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, wallet, walletAddress }) => {
-  const [gameState, setGameState] = useState<GameState | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
-  const [selectedGlass, setSelectedGlass] = useState<number | null>(null);
+  const handlePayAndStart = async () => {
+    try {
+      console.log("Simulation du paiement de 0.001 ETH");
+      
+      setBoard(Array(9).fill(null));
+      setXIsNext(true);
+      setIsAITurn(false);
+      setGameStarted(true);
+      setGameOver(false);
+      setGameMessage('');
+      alert("Paiement simulé avec succès. La partie va commencer.");
+    } catch (error) {
+      console.error("Erreur lors de la simulation du paiement:", error);
+      if (error instanceof Error) {
+        alert(`Erreur lors de la simulation du paiement: ${error.message}`);
+      } else {
+        alert("Une erreur inconnue s'est produite lors de la simulation du paiement");
+      }
+    }
+  };
 
-  const glasses = ['🥛', '🥛', '🥛', '🥛', '🥛', '🥛', '🥛', '🥛', '🥛'];
+  const handleClick = (i: number) => {
+    if (!gameStarted || calculateWinner(board) || board[i] || isAITurn || gameOver) return;
+    const boardCopy = [...board];
+    boardCopy[i] = 'X';
+    setBoard(boardCopy);
+    
+    const winner = calculateWinner(boardCopy);
+    if (winner) {
+      setGameOver(true);
+      setGameMessage("Félicitations ! Vous avez gagné. Bienvenue sur le réseau Eclipse !");
+      handleWinningReward();
+    } else if (boardCopy.every(square => square !== null)) {
+      setGameMessage("Match nul ! La partie continue avec un nouveau plateau.");
+      setTimeout(() => {
+        setBoard(Array(9).fill(null));
+        setGameMessage('');
+      }, 2000);
+    } else {
+      setXIsNext(false);
+      setIsAITurn(true);
+    }
+  };
+
+  const handleWinningReward = async () => {
+    try {
+      // Ici, vous implémenterez la logique pour rembourser le joueur
+      console.log("Remboursement de la partie simulé");
+      alert("Vous avez été remboursé pour votre victoire !");
+    } catch (error) {
+      console.error("Erreur lors du remboursement:", error);
+      alert("Erreur lors du remboursement. Veuillez contacter le support.");
+    }
+  };
 
   useEffect(() => {
-    initializeGame();
-  }, []);
+    if (isAITurn && !calculateWinner(board) && !gameOver) {
+      const timer = setTimeout(() => {
+        const aiMove = getAIMove(board);
+        if (aiMove !== -1) {
+          const boardCopy = [...board];
+          boardCopy[aiMove] = 'O';
+          setBoard(boardCopy);
+          setXIsNext(true);
+          
+          const winner = calculateWinner(boardCopy);
+          if (winner) {
+            setGameOver(true);
+            setGameMessage("Game Over! L'IA a gagné.");
+          } else if (boardCopy.every(square => square !== null)) {
+            setGameMessage("Match nul ! La partie continue avec un nouveau plateau.");
+            setTimeout(() => {
+              setBoard(Array(9).fill(null));
+              setGameMessage('');
+            }, 2000);
+          }
+        }
+        setIsAITurn(false);
+      }, 500);
 
-  const getProvider = () => {
-    const connection = new Connection('https://testnet.dev2.eclipsenetwork.xyz');
-    const provider = new AnchorProvider(
-      connection, 
-      wallet, 
-      AnchorProvider.defaultOptions()
-    );
-    return provider;
+      return () => clearTimeout(timer);
+    }
+  }, [isAITurn, board, gameOver]);
+
+  let status;
+  if (gameOver) {
+    status = gameMessage;
+  } else if (gameMessage) {
+    status = gameMessage;
+  } else if (isAITurn) {
+    status = "L'IA réfléchit...";
+  } else {
+    status = "Votre tour";
   }
 
-  const initializeGame = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    setSelectedGlass(null);
-
-    try {
-      const provider = getProvider();
-      const program = new Program(IDL, programID, provider);
-
-      const [gameStatePDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("game_state"), new PublicKey(walletAddress).toBuffer()],
-        program.programId
-      );
-
-      await program.methods.initializeGame()
-        .accounts({
-          gameState: gameStatePDA,
-          player: new PublicKey(walletAddress),
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .rpc();
-
-      const gameState = await program.account.gameState.fetch(gameStatePDA);
-      setGameState(gameState as unknown as GameState);
-    } catch (error) {
-      console.error("Erreur lors de l'initialisation du jeu:", error);
-      setError("Impossible d'initialiser le jeu");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGlassClick = async (index: number) => {
-    if (loading || selectedGlass !== null || !gameState) return;
-
-    setLoading(true);
-    setError(null);
-    setSelectedGlass(index);
-
-    try {
-      const provider = getProvider();
-      const program = new Program(IDL, programID, provider);
-
-      const [gameStatePDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("game_state"), new PublicKey(walletAddress).toBuffer()],
-        program.programId
-      );
-
-      await program.methods.makeMove(index)
-        .accounts({
-          gameState: gameStatePDA,
-          player: new PublicKey(walletAddress),
-        })
-        .rpc();
-
-      const updatedGameState = await program.account.gameState.fetch(gameStatePDA);
-      const typedGameState = updatedGameState as unknown as GameState;
-      setGameState(typedGameState);
-
-      if (typedGameState.winner === 1) {
-        setResult("Vous avez gagné ! Le verre n'était pas empoisonné.");
-      } else if (typedGameState.winner === 2) {
-        setResult("Vous avez perdu ! Le verre était empoisonné.");
-      }
-    } catch (error) {
-      console.error("Erreur lors du choix du verre:", error);
-      setError("Impossible de choisir le verre");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="tic-tac-toe-game">
-      <h1>Tic Tac Toe (Chomping Glass)</h1>
-      <p>Choisissez un verre. Certains sont empoisonnés !</p>
-      <div className="glasses-container">
-        {glasses.map((glass, index) => (
-          <button
-            key={index}
-            className={`glass ${selectedGlass === index ? 'selected' : ''}`}
-            onClick={() => handleGlassClick(index)}
-            disabled={loading || selectedGlass !== null}
-          >
-            {glass}
-          </button>
-        ))}
-      </div>
-      {error && <p className="error">{error}</p>}
-      {result && <p className="result">{result}</p>}
-      <button onClick={initializeGame} disabled={loading}>Nouvelle partie</button>
-      <button onClick={onGameEnd} disabled={loading}>Retour à la sélection des jeux</button>
+    <div className="tic-tac-toe">
+      {!gameStarted ? (
+        <button onClick={handlePayAndStart}>Simuler le paiement de 0.001 ETH et commencer</button>
+      ) : (
+        <>
+          <div className="status">{status}</div>
+          <div className="board">
+            {board.map((square, index) => (
+              <button key={index} className="square" onClick={() => handleClick(index)}>
+                {square}
+              </button>
+            ))}
+          </div>
+          {gameOver && (
+            <button onClick={handlePayAndStart}>Nouvelle partie</button>
+          )}
+        </>
+      )}
+      <button onClick={onGameEnd}>Retour au menu</button>
     </div>
   );
 };
 
+function calculateWinner(squares: Array<string | null>): string | null {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+}
+
+function getAIMove(board: Array<string | null>): number {
+  // Vérifier d'abord si l'IA peut gagner
+  for (let i = 0; i < 9; i++) {
+    if (!board[i]) {
+      const boardCopy = [...board];
+      boardCopy[i] = 'O';
+      if (calculateWinner(boardCopy) === 'O') {
+        return i;
+      }
+    }
+  }
+  
+  // Ensuite, bloquer le joueur s'il peut gagner
+  for (let i = 0; i < 9; i++) {
+    if (!board[i]) {
+      const boardCopy = [...board];
+      boardCopy[i] = 'X';
+      if (calculateWinner(boardCopy) === 'X') {
+        return i;
+      }
+    }
+  }
+  
+  // Sinon, choisir un coup aléatoire
+  const availableMoves = board.reduce((acc, cell, index) => {
+    if (cell === null) acc.push(index);
+    return acc;
+  }, [] as number[]);
+
+  if (availableMoves.length === 0) return -1;
+  return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+}
+
+const TicTacToeGame = TicTacToe; // Si vous voulez garder le nom TicTacToeGame
 export default TicTacToe;

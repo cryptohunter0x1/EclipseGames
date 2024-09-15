@@ -1,119 +1,52 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { PublicKey, LAMPORTS_PER_SOL, Connection, Transaction, SystemProgram } from '@solana/web3.js';
-import './Tetris.css';
+import { ethers } from 'ethers';
+import './Tetris.css';  // Au lieu de import styles from './Tetris.module.css';
 
-const FEE_AMOUNT = 0.01 * LAMPORTS_PER_SOL; // 0.01 SOL
-const FEE_RECEIVER = new PublicKey('3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe');
+const FEE_AMOUNT = ethers.parseEther("0.001"); // 0.001 ETH
+const FEE_RECEIVER = "3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe";
 
 interface GameProps {
   onGameEnd: () => void;
-  wallet: any; // Instance de Salmon Wallet
+  wallet: any; // Vous pouvez spécifier un type plus précis si nécessaire
   walletAddress: string;
 }
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
-const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet }) => {
+const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet, walletAddress }) => {
   const [board, setBoard] = useState<number[][]>(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
   const [currentPiece, setCurrentPiece] = useState<number[][]>([[1, 1], [1, 1]]);
   const [currentPosition, setCurrentPosition] = useState({ x: 4, y: 0 });
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [fee, setFee] = useState<number | null>(null);
-  const [error, setError] = useState<string>('');
-  const [senderAddress, setSenderAddress] = useState<string>('');
-  const [rpcUrl, setRpcUrl] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [gameStarted, setGameStarted] = useState(false);
 
-  useEffect(() => {
-    const estimateTransactionFee = async () => {
-      try {
-        const customRpcUrl = "https://testnet.dev2.eclipsenetwork.xyz";
-        const connection = new Connection(customRpcUrl);
-        setRpcUrl(customRpcUrl);
+  const provider = new ethers.JsonRpcProvider("https://testnet.dev2.eclipsenetwork.xyz");
 
-        if (!wallet || !wallet.publicKey) {
-          throw new Error("Salmon Wallet n'est pas connecté ou la clé publique n'est pas disponible.");
-        }
-
-        const senderPublicKey = new PublicKey(wallet.publicKey);
-        setSenderAddress(senderPublicKey.toString());
-
-        const transaction = new Transaction();
-        const transferInstruction = SystemProgram.transfer({
-          fromPubkey: senderPublicKey,
-          toPubkey: FEE_RECEIVER,
-          lamports: FEE_AMOUNT
-        });
-        transaction.add(transferInstruction);
-
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = senderPublicKey;
-
-        const message = transaction.compileMessage();
-        const estimatedFee = await connection.getFeeForMessage(message, 'recent');
-
-        if (estimatedFee.value === null) {
-          throw new Error('Échec de l\'estimation des frais');
-        }
-        setFee(estimatedFee.value);
-      } catch (err: any) {
-        console.error("Erreur lors de l'estimation des frais:", err);
-        setError(err.message);
-      }
-    };
-
-    estimateTransactionFee();
-  }, [wallet]);
-
-  const paySalmon = async () => {
-    if (!wallet) {
-      throw new Error("Salmon Wallet n'est pas connecté.");
-    }
-    
-    try {
-      const transaction = {
-        to: FEE_RECEIVER.toBase58(),
-        amount: FEE_AMOUNT.toString(),
-        blockchain: 'solana'
-      };
-  
-      console.log("Tentative de transaction:", transaction);
-      console.log("Méthodes disponibles dans wallet:", Object.keys(wallet));
-
-      let tx;
-      if (typeof wallet.transfer === 'function') {
-        tx = await wallet.transfer(transaction);
-      } else if (typeof wallet.signAndSendTransaction === 'function') {
-        tx = await wallet.signAndSendTransaction(transaction);
-      } else if (typeof wallet.sendTransaction === 'function') {
-        tx = await wallet.sendTransaction(transaction);
-      } else {
-        throw new Error("Aucune méthode de transaction compatible n'a été trouvée dans Salmon Wallet");
-      }
-
-      console.log("Transaction envoyée:", tx);
-      return tx;
-    } catch (error: any) {
-      console.error("Erreur lors de l'envoi de la transaction:", error);
-      throw error;
-    }
-  };
+  const FEE_AMOUNT = ethers.parseEther("0.001"); // 0.001 ETH
+  const FEE_RECEIVER = "3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe";
 
   const startGame = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      await paySalmon();
+      // Simulation du paiement
+      console.log("Simulation du paiement de", ethers.formatEther(FEE_AMOUNT), "ETH");
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Attente simulée de 2 secondes
+      
+      console.log("Paiement simulé réussi");
+      setGameStarted(true);
       setBoard(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
       setCurrentPiece([[1, 1], [1, 1]]);
       setCurrentPosition({ x: 4, y: 0 });
       setScore(0);
       setGameOver(false);
-    } catch (error: any) {
-      console.error("Erreur lors du démarrage du jeu:", error);
-      alert("Une erreur s'est produite lors du paiement. Veuillez réessayer.");
+    } catch (err: any) {
+      console.error("Erreur lors de la simulation du paiement:", err);
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -242,27 +175,32 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet }) => {
     );
   };
 
+  if (!gameStarted) {
+    return (
+      <div>
+        <h2>Tetris</h2>
+        <p>Adresse du wallet : {walletAddress}</p>
+        {error && <p style={{color: 'red'}}>Erreur : {error}</p>}
+        <button onClick={startGame} disabled={isLoading}>
+          {isLoading ? 'Paiement en cours...' : `Démarrer une nouvelle partie (${ethers.formatEther(FEE_AMOUNT)} ETH)`}
+        </button>
+        <button onClick={onGameEnd}>Retour à la sélection des jeux</button>
+      </div>
+    );
+  }
+
   return (
-    <div className="tetris-container">
+    <div className="tetrisGame">
       <h2>Tetris</h2>
       <div className="tetris-info">
         <p>Score: {score}</p>
         {gameOver && <p>Game Over!</p>}
       </div>
-      <p>URL RPC connectée : {rpcUrl}</p>
-      <p>Adresse de l'expéditeur : {senderAddress}</p>
-      <p>Adresse du destinataire : {FEE_RECEIVER.toBase58()}</p>
-      {fee !== null ? (
-        <p>Frais de transaction estimés : {fee / LAMPORTS_PER_SOL} SOL</p>
-      ) : error ? (
-        <p>Erreur : {error}</p>
-      ) : (
-        <p>Estimation des frais en cours...</p>
-      )}
+      <p>Adresse du wallet : {walletAddress}</p>
       {renderBoard()}
-      {(gameOver || !board.some(row => row.some(cell => cell !== 0))) && (
-        <button onClick={startGame} disabled={isLoading || fee === null}>
-          {isLoading ? 'Paiement en cours...' : `Démarrer une nouvelle partie (${FEE_AMOUNT / LAMPORTS_PER_SOL} SOL + ${fee ? fee / LAMPORTS_PER_SOL : '?'} SOL de frais)`}
+      {gameOver && (
+        <button onClick={startGame} disabled={isLoading}>
+          {isLoading ? 'Paiement en cours...' : `Démarrer une nouvelle partie (${ethers.formatEther(FEE_AMOUNT)} ETH)`}
         </button>
       )}
       <button onClick={onGameEnd}>Retour à la sélection des jeux</button>
@@ -270,5 +208,5 @@ const Tetris: React.FC<GameProps> = ({ onGameEnd, wallet }) => {
   );
 };
 
+const TetrisGame = Tetris; // Si vous voulez garder le nom TetrisGame
 export default Tetris;
-

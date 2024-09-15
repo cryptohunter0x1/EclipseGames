@@ -1,67 +1,46 @@
-.tic-tac-toe-game {
+.tic-tac-toe {
     display: flex;
     flex-direction: column;
     align-items: center;
     font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .glasses-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+}
+
+.status {
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
     margin-bottom: 20px;
-  }
-  
-  .glass {
-    width: 60px;
-    height: 100px;
-    margin: 10px;
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 2px solid #ccc;
-    border-radius: 10px 10px 5px 5px;
-    cursor: pointer;
-    font-size: 18px;
-    transition: all 0.3s ease;
-  }
-  
-  .glass:hover {
-    transform: translateY(-5px);
-  }
-  
-  .glass.selected {
-    border-color: #007bff;
-  }
-  
-  .glass:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-  
-  .error {
-    color: red;
-    margin-bottom: 10px;
-  }
-  
-  .result {
+}
+
+.square {
+    width: 80px;
+    height: 80px;
+    font-size: 36px;
     font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
+    background-color: #f0f0f0;
+    border: 2px solid #333;
     cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-  }
-  
-  button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
+}
+
+.square:hover {
+    background-color: #e0e0e0;
+}
+
+button {
+    font-size: 18px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.x {
+    color: #ff4136; /* Rouge pour X */
+}
+
+.o {
+    color: #0074d9; /* Bleu pour O */
+}
