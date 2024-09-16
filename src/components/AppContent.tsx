@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet, Wallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import GameSelector from './GameSelector';
 import Tetris from './Tetris';
 import TicTacToe from './TicTacToe';
-import { ethers } from 'ethers';
 import { Connection } from '@solana/web3.js';
 
 function AppContent() {
@@ -52,8 +50,7 @@ function AppContent() {
           {currentGame === 'tictactoe' && provider && (
             <TicTacToe
               onGameEnd={handleGameEnd}
-              walletAddress={publicKey.toBase58()}
-              provider={provider as Connection}
+              provider={provider as Connection} 
             />
           )}
         </>

@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { SalmonWalletAdapter } from '@solana/wallet-adapter-salmon';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
 import HomePage from './HomePage';
-
 import '@solana/wallet-adapter-react-ui/styles.css';
+import { initializeGame } from './initializeGame';
 
 function App() {
   const network = WalletAdapterNetwork.Devnet;
@@ -16,6 +15,18 @@ function App() {
     () => [new SalmonWalletAdapter()],
     []
   );
+
+  const initializeGameCallback = useCallback(async () => {
+    try {
+      await initializeGame();
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation du jeu:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    initializeGameCallback();
+  }, [initializeGameCallback]);
 
   return (
     <ConnectionProvider endpoint={endpoint}>

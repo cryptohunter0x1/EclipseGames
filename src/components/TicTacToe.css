@@ -1,46 +1,79 @@
-.tic-tac-toe {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: Arial, sans-serif;
-}
-
-.status {
-    margin-bottom: 10px;
-    font-size: 24px;
-}
-
-.board {
+/* Ne change que l'apparence du jeu une fois qu'il est lancé */
+.tic-tac-toe-game {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    margin: auto;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .board {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
     gap: 5px;
-    margin-bottom: 20px;
-}
-
-.square {
-    width: 80px;
-    height: 80px;
-    font-size: 36px;
+    margin: 20px auto;
+  }
+  
+  .square {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5em;
     font-weight: bold;
-    background-color: #f0f0f0;
-    border: 2px solid #333;
+    background-color: #ffffff;
+    border: 2px solid #4A4A4A;
     cursor: pointer;
-}
-
-.square:hover {
-    background-color: #e0e0e0;
-}
-
-button {
-    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .square:hover {
+    background-color: #f1f1f1;
+    transform: scale(1.05);
+  }
+  
+  .square.filled {
+    background-color: #FFDA79;
+  }
+  
+  .status {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  
+  .button {
+    background-color: #28a745;
+    color: white;
     padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    margin: 10px;
     cursor: pointer;
-}
-
-.x {
-    color: #ff4136; /* Rouge pour X */
-}
-
-.o {
-    color: #0074d9; /* Bleu pour O */
-}
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #218838;
+  }
+  
+  .game-over {
+    color: #dc3545;
+    font-size: 2em;
+    margin-top: 20px;
+  }
+  
+  .difficulty-selection {
+    margin-top: 20px;
+  }
+  
+  .difficulty-selection label {
+    font-size: 1.2em;
+    margin-right: 10px;
+  }
+  

@@ -15,29 +15,23 @@ const games = [
 const HomePage: React.FC = () => {
   const { connected, publicKey } = useWallet();
   const { connection } = useConnection();
-  const [isConnected, setIsConnected] = useState(false);
   const [currentGame, setCurrentGame] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsConnected(connected);
+    if (!connected) {
+      setCurrentGame(null); // Si le wallet se déconnecte, réinitialiser le jeu
+    }
   }, [connected]);
 
-  const handleDisconnect = () => {
-    setIsConnected(false);
-    setCurrentGame(null);
-  };
-
   const handleGameEnd = () => {
-    setCurrentGame(null);
+    setCurrentGame(null); // Réinitialiser le jeu quand la partie se termine
   };
 
   const renderGame = () => {
     if (!publicKey) {
       return null;
     }
-    
-    const walletAddress = publicKey.toBase58();
-    
+
     switch (currentGame) {
       case 'Tetris':
         return (
@@ -46,11 +40,12 @@ const HomePage: React.FC = () => {
           </div>
         );
       case 'Tic Tac Toe':
-        return <TicTacToe 
-          onGameEnd={handleGameEnd}
-          walletAddress={walletAddress}
-          provider={connection}
-        />;
+        return (
+          <TicTacToe 
+            onGameEnd={handleGameEnd}
+            provider={connection} // On passe seulement la connexion, plus de walletAddress
+          />
+        );
       default:
         return null;
     }
@@ -64,7 +59,7 @@ const HomePage: React.FC = () => {
         <CustomWalletButton />
       </div>
       
-      {isConnected && !currentGame && (
+      {connected && !currentGame && (
         <div className={styles.gameSelection}>
           <h2>Sélectionnez un jeu</h2>
           <div className={styles.gameButtons}>
