@@ -1,0 +1,14 @@
+{
+    "version": "0.1.0",
+    "name": "eclipse_games",
+    "instructions": [
+      {
+        "name": "initialize",
+        "accounts": [],
+        "args": []
+      }
+    ],
+    "metadata": {
+      "address": "GYLvUjL1JUjFfqVvEK4C8EKFMh93B1ZzrQsQceRDEHeB"
+    }
+  }
