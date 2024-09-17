@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, Connection } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import './TicTacToe.css';
 
 interface TicTacToeProps {
   onGameEnd: () => void;
-  provider: Connection; // Ajoutez cette ligne pour accepter la connexion
+  provider: Connection;
 }
 
 const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
   const { publicKey, sendTransaction } = useWallet();
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [board, setBoard] = useState<Array<string | null>>(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
   const [gameOver, setGameOver] = useState(false);
   const [gameMessage, setGameMessage] = useState('');
@@ -19,7 +19,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Transaction pour commencer une nouvelle partie
-  const handlePayAndStart = async () => {
+  const handlePayAndStart = useCallback(async () => {
     if (!publicKey) {
       setGameMessage("Veuillez connecter votre portefeuille.");
       return;
@@ -36,7 +36,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
       }).add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
-          toPubkey: new PublicKey("3H8wsA5G3F4s2i8eCYdEhksZiuYDFiivp4DZJF58PTmQ"), // Remplacez avec l'adresse du destinataire
+          toPubkey: new PublicKey("3H8wsA5G3F4s2i8eCYdEhksZiuYDFiivp4DZJF58PTmQ"), // Remplacez par l'adresse du destinataire
           lamports: LAMPORTS_PER_SOL * 0.001,
         })
       );
@@ -55,17 +55,17 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [provider, publicKey, sendTransaction]);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setBoard(Array(9).fill(null));
     setGameOver(false);
     setGameMessage('');
     setXIsNext(true);
     setIsAITurn(false);
-  };
+  }, []);
 
-  const handleClick = (i: number) => {
+  const handleClick = useCallback((i: number) => {
     if (gameOver || board[i] || isAITurn) return;
 
     const boardCopy = [...board];
@@ -87,7 +87,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
     }
 
     setIsAITurn(true);
-  };
+  }, [board, gameOver, isAITurn]);
 
   useEffect(() => {
     if (isAITurn && !gameOver) {

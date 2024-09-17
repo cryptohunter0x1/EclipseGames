@@ -1,20 +1,17 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { SalmonWalletAdapter } from '@solana/wallet-adapter-salmon';
 import { BackpackWalletAdapter } from '@solana/wallet-adapter-backpack';
-import { WalletModalProvider, WalletMultiButton, WalletDisconnectButton } from '@solana/wallet-adapter-react-ui';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PublicKey } from '@solana/web3.js';
 import HomePage from './components/HomePage';
+import linktreeLogo from './images/linktr.eeCryptoHunter0x.png';
 
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 function App() {
-  // Network setup
-  const network = WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => "https://testnet.dev2.eclipsenetwork.xyz", []);
 
-  // Setup Salmon Wallet and Backpack Wallet
   const wallets = useMemo(() => [
     new SalmonWalletAdapter(), 
     new BackpackWalletAdapter()
@@ -22,12 +19,11 @@ function App() {
 
   const [connected, setConnected] = useState(false);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
-  // Listen for connection and disconnection events
   useEffect(() => {
-    const wallet = wallets[0]; // Assuming default is Salmon, can modify to handle multiple wallets
+    const wallet = wallets[0]; 
 
-    // Handle connection and disconnection
     wallet.on('connect', () => {
       setConnected(true);
       if (wallet.publicKey) {
@@ -43,27 +39,44 @@ function App() {
     });
   }, [wallets]);
 
-  // Function to send a test transaction
-  const sendTransaction = async () => {
-    if (!connected || !publicKey) {
-      alert('Please connect a wallet first!');
+  const connectWallet = async () => {
+    if (isWalletConnected) {
+      console.log("Le portefeuille est déjà connecté");
       return;
     }
 
-    const connection = new Connection(endpoint);
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: new PublicKey('DestinatairePublicKeyIci'), // Replace with destination public key
-        lamports: 1000000, // Amount to send (1 SOL = 1e9 Lamports)
-      })
-    );
+    try {
+      if (window?.salmon && !window.salmon.connected) {
+        await window.salmon.connect();
+        const publicKey = window.salmon.publicKey;
+        setPublicKey(publicKey);
+        setIsWalletConnected(true);
+        console.log("Portefeuille connecté :", publicKey?.toString());
+      } else if (window?.salmon?.connected) {
+        console.log("Portefeuille déjà connecté :", window.salmon?.publicKey?.toString());
+      } else {
+        console.error("L'extension Salmon n'est pas installée");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la connexion au portefeuille:", error);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (!isWalletConnected) {
+      console.log("Le portefeuille n'est pas connecté");
+      return;
+    }
 
     try {
-      const signature = await wallets[0].sendTransaction(transaction, connection); // Send transaction with the wallet
-      console.log('Transaction successful with signature:', signature);
+      if (window?.salmon) {
+        await window.salmon.disconnect();
+        setPublicKey(null); 
+        setIsWalletConnected(false);
+        console.log("Portefeuille déconnecté");
+      }
     } catch (error) {
-      console.error('Transaction failed:', error);
+      console.error("Erreur lors de la déconnexion du portefeuille:", error);
     }
   };
 
@@ -72,17 +85,32 @@ function App() {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <div>
-            <h1>Connect to Salmon or Backpack Wallet</h1>
-            <WalletMultiButton />
-            {connected && publicKey && (
-              <div>
-                <p>Connected Wallet: {publicKey.toString()}</p>
-                <button onClick={sendTransaction}>Send Test Transaction</button>
-              </div>
-            )}
-            {connected && <WalletDisconnectButton />}
+            <button onClick={connectWallet} style={{ display: 'none' }}>
+              Connecter le portefeuille
+            </button>
           </div>
           <HomePage />
+
+          {/* Logo Linktree en bas à droite */}
+          <div 
+            style={{
+              position: 'fixed',
+              bottom: '30px',
+              right: '120px',
+            }}
+          >
+            <a 
+              href="https://linktr.ee/CryptoHunter0x" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <img 
+                src={linktreeLogo}  
+                alt="Logo Linktree" 
+                style={{ width: '80px', height: '80px' }} 
+              />
+            </a>
+          </div>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

@@ -1,76 +1,55 @@
-.App {
+div {
   text-align: center;
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-h1 {
-  color: #4a4a4a;
+  margin-top: 50px;
 }
 
 button {
-  background-color: #4CAF50;
-  border: none;
+  padding: 10px 20px;
+  background-color: #;
   color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
+  border: none;
+  border-radius: 5px;
+  margin: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: #30c050 
+;
 }
 
-.game-selector {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.wallet-status {
-  margin-top: 20px;
+p {
+  font-size: 18px;
   font-weight: bold;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.game-item {
+  background: transparent; /* Retire le fond vert */
+  border: none; /* Retire toute bordure si présente */
+  padding: 80px; /* Ajustez selon vos besoins */
+  margin: 10px 0; /* Espace entre les jeux */
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.game-item img {
+  width: 50px; /* Ajustez la taille de l'icône selon vos besoins */
+  height: 50px;
+  margin-right: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.game-item span {
+  color: white; /* Couleur du texte */
+  font-size: 18px; /* Taille du texte */
+}
+
+button.game-item {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  outline: inherit;
 }

@@ -47,19 +47,19 @@
   }
   
   .button {
-    background-color: #28a745;
+    background-color: #30c050;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     font-size: 1.2em;
-    margin: 10px;
+    margin: 20px;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
   .button:hover {
-    background-color: #218838;
+    background-color: #30c050;
   }
   
   .game-over {

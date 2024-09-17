@@ -1,17 +1,14 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react'; 
 import { useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'; 
-import './Tetris.css'; // Créez un fichier CSS pour styliser le jeu
+import './Tetris.css'; 
 
-// Configuration pour le paiement
 const FEE_AMOUNT = LAMPORTS_PER_SOL * 0.001;
 const FEE_RECEIVER = new PublicKey("3hhyWcsVjchWy5zuNFJvjskgcZ8WDuuvWDuSyr3GQoUe");
 
-// Dimensions du plateau
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
-// Pièces Tétris (formes et rotations)
 const TETROMINOS = {
   O: [[1, 1], [1, 1]],
   I: [[1, 1, 1, 1]],
@@ -22,7 +19,7 @@ const TETROMINOS = {
   S: [[0, 1, 1], [1, 1, 0]],
 };
 
-export interface TetrisProps {
+interface TetrisProps {
   onGameEnd: () => void;
 }
 
@@ -32,55 +29,72 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
 
   const [board, setBoard] = useState<number[][]>(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
   const [currentPiece, setCurrentPiece] = useState<number[][]>(TETROMINOS.O);
-  const [currentPosition, setCurrentPosition] = useState({ x: 4, y: 0 });
+  const [currentPosition, setCurrentPosition] = useState<{ x: number; y: number }>({ x: 4, y: 0 });
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  
+  const intervalIdRef = useRef<number | null>(null);
 
-  // Gestion des mouvements automatiques de la pièce
   useEffect(() => {
     if (!gameOver && gameStarted) {
-      const interval = setInterval(() => {
+      intervalIdRef.current = window.setInterval(() => {
         if (!isValidMove(currentPosition.x, currentPosition.y + 1, currentPiece)) {
           placePiece();
         } else {
           movePiece(0, 1);
         }
       }, 1000);
-      return () => clearInterval(interval);
     }
-  }, [gameOver, gameStarted, currentPosition, currentPiece]);
 
-  // Gestion des touches du clavier
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (!gameOver && gameStarted) {
-        switch (e.key) {
-          case 'ArrowLeft':
-            movePiece(-1, 0);
-            break;
-          case 'ArrowRight':
-            movePiece(1, 0);
-            break;
-          case 'ArrowDown':
-            movePiece(0, 1);
-            break;
-          case 'ArrowUp':
-            rotatePiece();
-            break;
-        }
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
       }
     };
+  }, [gameOver, gameStarted, currentPosition, currentPiece]);
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+  // Gestion des touches avec un set pour éviter les répétitions
+  const keyPressed = useRef(new Set<string>());
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    keyPressed.current.add(e.key);
+
+    if (!gameOver && gameStarted) {
+      if (keyPressed.current.has('ArrowLeft')) {
+        movePiece(-1, 0);
+      }
+      if (keyPressed.current.has('ArrowRight')) {
+        movePiece(1, 0);
+      }
+      if (keyPressed.current.has('ArrowDown')) {
+        movePiece(0, 1);
+      }
+      if (keyPressed.current.has('ArrowUp')) {
+        rotatePiece();
+      }
+    }
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    keyPressed.current.delete(e.key);
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, [gameOver, gameStarted]);
 
   const startGame = useCallback(async () => {
-    if (!anchorWallet || !publicKey) {
+    if (!connected || !publicKey) {
       setError("Wallet not connected");
       return;
     }
@@ -90,7 +104,6 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
 
     try {
       const connection = new Connection("https://staging-rpc.dev2.eclipsenetwork.xyz", 'confirmed');
-      
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
@@ -114,7 +127,7 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [anchorWallet, publicKey, sendTransaction]);
+  }, [connected, publicKey, sendTransaction]);
 
   const resetGame = () => {
     setBoard(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
@@ -155,8 +168,12 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
   };
 
   const movePiece = (dx: number, dy: number) => {
-    if (isValidMove(currentPosition.x + dx, currentPosition.y + dy, currentPiece)) {
-      setCurrentPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+    const newX = currentPosition.x + dx;
+    const newY = currentPosition.y + dy;
+    if (isValidMove(newX, newY, currentPiece)) {
+      setCurrentPosition({ x: newX, y: newY });
+    } else if (dy > 0) {
+      placePiece();
     }
   };
 
@@ -189,7 +206,9 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
     for (let y = 0; y < currentPiece.length; y++) {
       for (let x = 0; x < currentPiece[y].length; x++) {
         if (currentPiece[y][x]) {
-          newBoard[currentPosition.y + y][currentPosition.x + x] = 1;
+          if (currentPosition.y + y < BOARD_HEIGHT) {
+            newBoard[currentPosition.y + y][currentPosition.x + x] = 1;
+          }
         }
       }
     }
@@ -235,7 +254,6 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
     spawnNewPiece();
   };
 
-  // Fonction de rendu principal
   const renderGame = () => {
     if (!connected) {
       return <div>Please connect your wallet to play Tetris</div>;
