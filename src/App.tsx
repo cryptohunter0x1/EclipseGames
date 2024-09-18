@@ -9,7 +9,11 @@ import linktreeLogo from './images/linktr.eeCryptoHunter0x.png';
 
 import '@solana/wallet-adapter-react-ui/styles.css';
 
-function App() {
+interface AppProps {
+  onGameEnd: () => void;
+}
+
+const App: React.FC<AppProps> = ({ onGameEnd }) => {
   const endpoint = useMemo(() => "https://testnet.dev2.eclipsenetwork.xyz", []);
 
   const wallets = useMemo(() => [
@@ -115,6 +119,6 @@ function App() {
       </WalletProvider>
     </ConnectionProvider>
   );
-}
+};
 
 export default App;

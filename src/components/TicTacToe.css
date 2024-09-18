@@ -1,105 +1,68 @@
-/* Ne change que l'apparence du jeu une fois qu'il est lancé */
+.tic-tac-toe-game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 .tic-tac-toe-game {
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    margin: auto;
-    text-align: center;
-    font-family: 'Arial', sans-serif;
-  }
-  
-  .board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px;
-    margin: 20px auto;
-  }
-  
-  .square {
-    width: 100px;
-    height: 100px;
-    font-size: 2.5em;
-    font-weight: bold;
-    background-color: #ffffff;
-    border: 2px solid #4A4A4A;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-  }
-  
-  .square:hover {
-    background-color: #f1f1f1;
-    transform: scale(1.05);
-  }
-  
-  .square.filled {
-    background-color: #FFDA79;
-  }
-  
-  .status {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-  }
-  
-  .button {
-    background-color: #30c050;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.2em;
-    margin: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .button:hover {
-    background-color: #30c050;
-  }
-  
-  .game-over {
-    color: #dc3545;
-    font-size: 2em;
-    margin-top: 20px;
-  }
-  
-  .difficulty-selection {
-    margin-top: 20px;
-  }
-  
-  .difficulty-selection label {
-    font-size: 1.2em;
-    margin-right: 10px;
-  }
-  
-  .game-button {
-    background: transparent; /* Retire le fond vert */
-    border: none; /* Retire toute bordure si présente */
-    padding: 10px; /* Ajustez selon vos besoins */
-    margin: 10px; /* Espace entre les logos */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-  }
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
 
-  .game-button img {
-    width: 80px; /* Ajustez la taille selon vos préférences */
-    height: 80px;
-    transition: transform 0.2s ease;
-  }
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
 
-  .game-button:hover img {
-    transform: scale(1.1); /* Léger effet de zoom au survol */
-  }
+.square {
+  background-color: #fff;
+  border: 2px solid #4A4A4A;
+  width: 100px;
+  height: 100px;
+  font-size: 2em;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .game-button span {
-    color: white; /* Couleur du texte */
-    margin-top: 5px;
-    font-size: 14px;
-  }
+.status {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.button {
+  background-color: #30c050;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.button:hover {
+  background-color: #28a745;
+}
+
+.difficulty-selection {
+  margin-top: 20px;
+}
+
+.difficulty-selection label {
+  font-size: 1.2em;
+  margin-right: 10px;
+}
+
+.game-over {
+  color: #dc3545;
+  font-size: 2em;
+  margin-top: 20px;
+}
