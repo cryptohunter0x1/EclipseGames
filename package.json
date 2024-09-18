@@ -13,8 +13,10 @@
         "@solana/wallet-standard": "^1.1.2",
         "@solana/web3.js": "^1.95.3",
         "ethers": "^6.13.2",
+        "postcss": "^8.4.47",
         "react": "^17.x.x || ^18.x.x",
         "react-dom": "^17.x.x || ^18.x.x",
+        "react-scripts": "^5.0.1",
         "web-vitals": "^4.2.3"
     },
     "scripts": {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'; 
-import { useWallet, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'; 
 import './Tetris.css'; 
 
@@ -25,7 +25,6 @@ interface TetrisProps {
 
 const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
   const { publicKey, sendTransaction, connected } = useWallet();
-  const anchorWallet = useAnchorWallet();
 
   const [board, setBoard] = useState<number[][]>(Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0)));
   const [currentPiece, setCurrentPiece] = useState<number[][]>(TETROMINOS.O);
@@ -156,20 +155,11 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
     };
   }, [gameOver, gameStarted, currentPosition, currentPiece, isValidMove, placePiece, movePiece]);
 
-  // Gestion des touches avec un set pour éviter les répétitions
-  const keyPressed = useRef(new Set<string>());
-
-  const handleKeyUp = (e: KeyboardEvent) => {
-    keyPressed.current.delete(e.key);
-  };
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [handleKeyDown]);
 
