@@ -53,30 +53,30 @@
   }
   
   .game-button {
+    background: transparent; /* Retire le fond vert */
+    border: none; /* Retire toute bordure si présente */
+    padding: 10px; /* Ajustez selon vos besoins */
+    margin: 10px; /* Espace entre les logos */
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
-    width: 150px; /* Largeur fixe pour tous les boutons */
-    padding: 10px;
-    background-color: rgba(0, 100, 0, 0.7); /* Fond vert foncé semi-transparent */
-    border-radius: 10px;
-    transition: transform 0.2s;
-  }
-  
-  .game-button:hover {
-    transform: scale(1.05);
+    cursor: pointer;
   }
   
   .game-button img {
-    width: 80px;
+    width: 80px; /* Ajustez la taille selon vos préférences */
     height: 80px;
-    margin-bottom: 10px;
+    transition: transform 0.2s ease;
+  }
+  
+  .game-button:hover img {
+    transform: scale(1.1); /* Léger effet de zoom au survol */
   }
   
   .game-button span {
-    color: white;
-    font-weight: bold;
+    color: white; /* Couleur du texte */
+    margin-top: 5px;
+    font-size: 14px;
   }
   
   .connect-wallet {

@@ -43,7 +43,7 @@ const HomePage: React.FC = () => {
         return (
           <TicTacToe 
             onGameEnd={handleGameEnd}
-            provider={connection} // On passe seulement la connexion, plus de walletAddress
+            // provider={connection} // Supprimez la ligne suivante
           />
         );
       default:

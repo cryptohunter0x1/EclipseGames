@@ -39,6 +39,105 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
   
   const intervalIdRef = useRef<number | null>(null);
 
+  const isValidMove = useCallback((x: number, y: number, piece: number[][]) => {
+    for (let row = 0; row < piece.length; row++) {
+      for (let col = 0; col < piece[row].length; col++) {
+        if (piece[row][col]) {
+          const newX = x + col;
+          const newY = y + row;
+          if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT || (newY >= 0 && board[newY][newX])) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }, [board]);
+
+  const checkLines = useCallback(() => {
+    let linesCleared = 0;
+    const newBoard = board.filter(row => {
+      if (row.every(cell => cell !== 0)) {
+        linesCleared++;
+        return false;
+      }
+      return true;
+    });
+    while (newBoard.length < BOARD_HEIGHT) {
+      newBoard.unshift(Array(BOARD_WIDTH).fill(0));
+    }
+    setBoard(newBoard);
+    setScore(prev => prev + linesCleared * 100);
+  }, [board]);
+
+  const spawnNewPiece = useCallback(() => {
+    const pieces = Object.values(TETROMINOS);
+    const newPiece = pieces[Math.floor(Math.random() * pieces.length)];
+    const newPosition = { 
+      x: Math.floor(BOARD_WIDTH / 2) - Math.floor(newPiece[0].length / 2), 
+      y: 0 
+    };
+    
+    if (isValidMove(newPosition.x, newPosition.y, newPiece)) {
+      setCurrentPiece(newPiece);
+      setCurrentPosition(newPosition);
+    } else {
+      setGameOver(true);
+    }
+  }, [isValidMove]);
+
+  const placePiece = useCallback(() => {
+    const newBoard = [...board];
+    for (let y = 0; y < currentPiece.length; y++) {
+      for (let x = 0; x < currentPiece[y].length; x++) {
+        if (currentPiece[y][x]) {
+          if (currentPosition.y + y < BOARD_HEIGHT) {
+            newBoard[currentPosition.y + y][currentPosition.x + x] = 1;
+          }
+        }
+      }
+    }
+    setBoard(newBoard);
+    checkLines();
+    spawnNewPiece();
+  }, [board, currentPiece, currentPosition, checkLines, spawnNewPiece]);
+
+  const movePiece = useCallback((dx: number, dy: number) => {
+    if (isValidMove(currentPosition.x + dx, currentPosition.y + dy, currentPiece)) {
+      setCurrentPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+    } else if (dy > 0) {
+      placePiece();
+    }
+  }, [currentPosition, currentPiece, isValidMove, placePiece]);
+
+  const rotatePiece = useCallback(() => {
+    const rotated = currentPiece[0].map((_, index) =>
+      currentPiece.map(row => row[index]).reverse()
+    );
+    if (isValidMove(currentPosition.x, currentPosition.y, rotated)) {
+      setCurrentPiece(rotated);
+    }
+  }, [currentPiece, currentPosition, isValidMove]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!gameOver && gameStarted) {
+      switch (e.key) {
+        case 'ArrowLeft':
+          movePiece(-1, 0);
+          break;
+        case 'ArrowRight':
+          movePiece(1, 0);
+          break;
+        case 'ArrowDown':
+          movePiece(0, 1);
+          break;
+        case 'ArrowUp':
+          rotatePiece();
+          break;
+      }
+    }
+  }, [gameOver, gameStarted, movePiece, rotatePiece]);
+
   useEffect(() => {
     if (!gameOver && gameStarted) {
       intervalIdRef.current = window.setInterval(() => {
@@ -55,29 +154,10 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
         clearInterval(intervalIdRef.current);
       }
     };
-  }, [gameOver, gameStarted, currentPosition, currentPiece]);
+  }, [gameOver, gameStarted, currentPosition, currentPiece, isValidMove, placePiece, movePiece]);
 
   // Gestion des touches avec un set pour éviter les répétitions
   const keyPressed = useRef(new Set<string>());
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    keyPressed.current.add(e.key);
-
-    if (!gameOver && gameStarted) {
-      if (keyPressed.current.has('ArrowLeft')) {
-        movePiece(-1, 0);
-      }
-      if (keyPressed.current.has('ArrowRight')) {
-        movePiece(1, 0);
-      }
-      if (keyPressed.current.has('ArrowDown')) {
-        movePiece(0, 1);
-      }
-      if (keyPressed.current.has('ArrowUp')) {
-        rotatePiece();
-      }
-    }
-  };
 
   const handleKeyUp = (e: KeyboardEvent) => {
     keyPressed.current.delete(e.key);
@@ -91,7 +171,7 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameOver, gameStarted]);
+  }, [handleKeyDown]);
 
   const startGame = useCallback(async () => {
     if (!connected || !publicKey) {
@@ -165,88 +245,6 @@ const Tetris: React.FC<TetrisProps> = ({ onGameEnd }) => {
         ))}
       </div>
     );
-  };
-
-  const movePiece = (dx: number, dy: number) => {
-    const newX = currentPosition.x + dx;
-    const newY = currentPosition.y + dy;
-    if (isValidMove(newX, newY, currentPiece)) {
-      setCurrentPosition({ x: newX, y: newY });
-    } else if (dy > 0) {
-      placePiece();
-    }
-  };
-
-  const rotatePiece = () => {
-    const rotated = currentPiece[0].map((_, index) =>
-      currentPiece.map(row => row[index]).reverse()
-    );
-    if (isValidMove(currentPosition.x, currentPosition.y, rotated)) {
-      setCurrentPiece(rotated);
-    }
-  };
-
-  const isValidMove = (x: number, y: number, piece: number[][]) => {
-    for (let row = 0; row < piece.length; row++) {
-      for (let col = 0; col < piece[row].length; col++) {
-        if (piece[row][col]) {
-          const newX = x + col;
-          const newY = y + row;
-          if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT || (newY >= 0 && board[newY][newX])) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  };
-
-  const placePiece = () => {
-    const newBoard = [...board];
-    for (let y = 0; y < currentPiece.length; y++) {
-      for (let x = 0; x < currentPiece[y].length; x++) {
-        if (currentPiece[y][x]) {
-          if (currentPosition.y + y < BOARD_HEIGHT) {
-            newBoard[currentPosition.y + y][currentPosition.x + x] = 1;
-          }
-        }
-      }
-    }
-    setBoard(newBoard);
-    checkLines();
-    spawnNewPiece();
-  };
-
-  const checkLines = () => {
-    let linesCleared = 0;
-    const newBoard = board.filter(row => {
-      if (row.every(cell => cell !== 0)) {
-        linesCleared++;
-        return false;
-      }
-      return true;
-    });
-    while (newBoard.length < BOARD_HEIGHT) {
-      newBoard.unshift(Array(BOARD_WIDTH).fill(0));
-    }
-    setBoard(newBoard);
-    setScore(prev => prev + linesCleared * 100);
-  };
-
-  const spawnNewPiece = () => {
-    const pieces = Object.values(TETROMINOS);
-    const newPiece = pieces[Math.floor(Math.random() * pieces.length)];
-    const newPosition = { 
-      x: Math.floor(BOARD_WIDTH / 2) - Math.floor(newPiece[0].length / 2), 
-      y: 0 
-    };
-    
-    if (isValidMove(newPosition.x, newPosition.y, newPiece)) {
-      setCurrentPiece(newPiece);
-      setCurrentPosition(newPosition);
-    } else {
-      setGameOver(true);
-    }
   };
 
   const initializeGame = async () => {

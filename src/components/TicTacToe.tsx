@@ -3,12 +3,14 @@ import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, Connection } f
 import { useWallet } from '@solana/wallet-adapter-react';
 import './TicTacToe.css';
 
+const FEE_AMOUNT = LAMPORTS_PER_SOL * 0.001;
+const FEE_RECEIVER = new PublicKey("3H8wsA5G3F4s2i8eCYdEhksZiuYDFiivp4DZJF58PTmQ");
+
 interface TicTacToeProps {
   onGameEnd: () => void;
-  provider: Connection;
 }
 
-const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
+const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd }) => {
   const { publicKey, sendTransaction } = useWallet();
   const [board, setBoard] = useState<Array<string | null>>(Array(9).fill(null));
   const [xIsNext, setXIsNext] = useState(true);
@@ -29,24 +31,17 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
     setGameMessage("Transaction en cours...");
 
     try {
-      const { blockhash, lastValidBlockHeight } = await provider.getLatestBlockhash('finalized');
-      const transaction = new Transaction({
-        recentBlockhash: blockhash,
-        feePayer: publicKey,
-      }).add(
+      const connection = new Connection("https://staging-rpc.dev2.eclipsenetwork.xyz", 'confirmed');
+      const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
-          toPubkey: new PublicKey("3H8wsA5G3F4s2i8eCYdEhksZiuYDFiivp4DZJF58PTmQ"), // Remplacez par l'adresse du destinataire
-          lamports: LAMPORTS_PER_SOL * 0.001,
+          toPubkey: FEE_RECEIVER,
+          lamports: FEE_AMOUNT,
         })
       );
 
-      const signature = await sendTransaction(transaction, provider);
-      await provider.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight,
-      });
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, 'confirmed');
 
       setGameMessage("Transaction réussie ! Commencez à jouer.");
       resetGame();
@@ -55,7 +50,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ onGameEnd, provider }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [provider, publicKey, sendTransaction]);
+  }, [publicKey, sendTransaction]);
 
   const resetGame = useCallback(() => {
     setBoard(Array(9).fill(null));

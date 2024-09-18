@@ -50,7 +50,6 @@ function AppContent() {
           {currentGame === 'tictactoe' && provider && (
             <TicTacToe
               onGameEnd={handleGameEnd}
-              provider={provider as Connection} 
             />
           )}
         </>
